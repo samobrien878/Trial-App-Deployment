@@ -24,7 +24,7 @@ target_metrics = [
 ]
 
 # Streamlit UI setup
-st.set_page_config(page_title="Rat Behavior Assessment App",
+st.set_page_config(
                    page_icon="🐭",
                    layout="centered",
                    initial_sidebar_state="auto",
