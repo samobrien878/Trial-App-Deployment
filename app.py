@@ -30,6 +30,7 @@ st.set_page_config(page_title="Rat Behavior Assessment App",
                    initial_sidebar_state="auto",
                    menu_items=None)
 st.markdown("\n\n\n\n\n# Rat Performance Prediction App")
+
 # Custom CSS for black background and blue-themed elements
 st.markdown(
     """
@@ -56,15 +57,7 @@ st.markdown(
         background-color: #0073e6;
         transform: scale(1.1);
     }
-    .stSelectbox select {
-        background-color: #333333; /* Dark gray select box */
-        color: #00ffff; /* Light blue text in select box */
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        padding: 10px;
-    }
-    .stTextInput input, .stNumberInput input {
+    .stSelectbox select, .stTextInput input, .stNumberInput input {
         background-color: #333333; /* Dark gray input fields */
         color: #00ffff; /* Light blue text in input fields */
         font-size: 16px;
@@ -91,8 +84,12 @@ uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
 # Function to load the correct Random Forest model and scaler
 def load_model(target_variable):
     model_filename = f'{target_variable.replace(" ", "_")}_rf_ensemble_model.pkl'
-    rf_model = joblib.load(model_filename)
-    return rf_model
+    try:
+        rf_model = joblib.load(model_filename)
+        return rf_model
+    except FileNotFoundError:
+        st.error(f"Model file for {target_variable} not found.")
+        return None
 
 # If a file is uploaded, process the data
 if uploaded_file:
@@ -111,77 +108,26 @@ if uploaded_file:
             for index, row in uploaded_data.iterrows():
                 rat_results = {"Rat": index + 1}
                 for target_variable in target_metrics:
-                    # Prepare input data for prediction
-                    input_data = row[features].values.reshape(1, -1)
-
-                    # Load the model and scaler
                     rf_model = load_model(target_variable)
-
-                    # Make the prediction
-                    prediction = rf_model.predict(input_data)
-
-                    # Assign performance category
-                    performance = "proficient" if prediction[0] == 0 else "lower performance"
-                    rat_results[target_variable] = performance
-
+                    if rf_model:
+                        input_data = row[features].values.reshape(1, -1)
+                        prediction = rf_model.predict(input_data)
+                        performance = "proficient" if prediction[0] == 0 else "lower performance"
+                        rat_results[target_variable] = performance
                 results.append(rat_results)
 
-            # Display results as summary bubbles
+            # Display results
             for result in results:
                 st.write(f"**Rat {result['Rat']}**")
                 for metric, performance in result.items():
                     if metric != "Rat":
                         st.write(f"{metric}: {performance}")
                 st.write("---")
-
     else:
         st.error("Uploaded CSV file does not contain the required columns.")
 
 # Additional input fields for individual predictions
 st.header('Input Habituation Data')
-
-# JavaScript for auto-updating sum fields
-st.components.v1.html(
-    """
-    <script>
-    function calculateSums() {
-        // Get values from the input fields
-        var s1PokeEvent = parseFloat(document.getElementById('S1 poke event').value) || 0;
-        var s2PokeEvent = parseFloat(document.getElementById('S2 poke event').value) || 0;
-        var m1PokeEvent = parseFloat(document.getElementById('M1 poke event').value) || 0;
-        var m2PokeEvent = parseFloat(document.getElementById('M2 poke event').value) || 0;
-        var m3PokeEvent = parseFloat(document.getElementById('M3 poke event').value) || 0;
-        var sp1CornerPokeEvent = parseFloat(document.getElementById('Sp1 corner poke event').value) || 0;
-        var sp2CornerPokeEvent = parseFloat(document.getElementById('Sp2 corner poke event').value) || 0;
-        var s1PokeDuration = parseFloat(document.getElementById('S1 poke duration').value) || 0;
-        var s2PokeDuration = parseFloat(document.getElementById('S2 poke duration').value) || 0;
-        var m1PokeDuration = parseFloat(document.getElementById('M1 poke duration').value) || 0;
-        var m2PokeDuration = parseFloat(document.getElementById('M2 poke duration').value) || 0;
-        var m3PokeDuration = parseFloat(document.getElementById('M3 poke duration').value) || 0;
-        var sp1CornerPokeDuration = parseFloat(document.getElementById('Sp1 corner poke duration').value) || 0;
-        var sp2CornerPokeDuration = parseFloat(document.getElementById('Sp2 corner poke duration').value) || 0;
-
-        // Calculate the sums
-        var portPokes = s1PokeEvent + s2PokeEvent + m1PokeEvent + m2PokeEvent + m3PokeEvent;
-        var cornerPokes = sp1CornerPokeEvent + sp2CornerPokeEvent;
-        var pokeDuration = s1PokeDuration + s2PokeDuration + m1PokeDuration + m2PokeDuration + m3PokeDuration;
-        var cornerPokeDuration = sp1CornerPokeDuration + sp2CornerPokeDuration;
-
-        // Update the sum fields
-        document.getElementById('port_pokes').value = portPokes.toFixed(2);
-        document.getElementById('corner_pokes').value = cornerPokes.toFixed(2);
-        document.getElementById('port_duration').value = pokeDuration.toFixed(2);
-        document.getElementById('corner_duration').value = cornerPokeDuration.toFixed(2);
-    }
-
-    // Attach the calculateSums function to input events
-    document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', calculateSums);
-    });
-    </script>
-    """,
-    height=0,
-)
 
 # Create input fields dynamically
 input_data = {}
@@ -189,13 +135,13 @@ for feature in features:
     if feature not in ['port_pokes', 'corner_pokes', 'port_duration', 'corner_duration']:
         input_data[feature] = st.number_input(f'{feature}', key=feature)
 
-# Compute sum fields
+# Compute derived fields
 port_pokes = sum([input_data.get(f'{prefix} poke event', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
 corner_pokes = sum([input_data.get(f'Sp{num} corner poke event', 0) for num in ['1', '2']])
 port_duration = sum([input_data.get(f'{prefix} poke duration', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
 corner_duration = sum([input_data.get(f'Sp{num} corner poke duration', 0) for num in ['1', '2']])
 
-# Display sum fields
+# Display derived fields
 st.write(f'Port Pokes: {port_pokes}')
 st.write(f'Corner Pokes: {corner_pokes}')
 st.write(f'Port Duration: {port_duration}')
@@ -206,20 +152,13 @@ if st.button('Predict Individual Performance'):
 
     individual_results = {}
     for target_variable in target_metrics:
-        # Prepare input data for prediction
         input_values = [input_data.get(feature, 0) for feature in features]
         input_data_array = np.array(input_values).reshape(1, -1)
-
-        # Load the model and scaler
         rf_model = load_model(target_variable)
-
-
-        # Make the prediction
-        prediction = rf_model.predict(input_data_array)
-
-        # Assign performance category
-        performance = "proficient" if prediction[0] == 0 else "lower performance"
-        individual_results[target_variable] = performance
+        if rf_model:
+            prediction = rf_model.predict(input_data_array)
+            performance = "proficient" if prediction[0] == 0 else "lower performance"
+            individual_results[target_variable] = performance
 
     # Display results for the individual rat
     for metric, performance in individual_results.items():
