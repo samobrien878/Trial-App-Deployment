@@ -141,7 +141,7 @@ if uploaded_file:
         st.error("Uploaded CSV file does not contain the required columns.")
 
 # Additional input fields for individual predictions
-st.header('Input Day 1 Habituation Data')
+st.header('Input Habituation Data')
 
 # JavaScript for auto-updating sum fields
 st.components.v1.html(
@@ -197,6 +197,12 @@ port_pokes = sum([input_data.get(f'{prefix} poke event', 0) for prefix in ['S1',
 corner_pokes = sum([input_data.get(f'Sp{num} corner poke event', 0) for num in ['1', '2']])
 port_duration = sum([input_data.get(f'{prefix} poke duration', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
 corner_duration = sum([input_data.get(f'Sp{num} corner poke duration', 0) for num in ['1', '2']])
+
+# Add sum fields to input_data
+input_data['port_pokes'] = port_pokes
+input_data['corner_pokes'] = corner_pokes
+input_data['port_duration'] = port_duration
+input_data['corner_duration'] = corner_duration
 
 # Display sum fields
 st.write(f'Port Pokes: {port_pokes}')
