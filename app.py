@@ -24,14 +24,12 @@ target_metrics = [
 ]
 
 # Streamlit UI setup
-st.set_page_config(
+st.set_page_config(page_title="Rat Behavior Assessment App",
                    page_icon="🐭",
                    layout="centered",
                    initial_sidebar_state="auto",
                    menu_items=None)
-st.markdown("\n\n\n\n\n")
-st.markdown("\n\n\n\n\n")
-
+st.markdown("\n\n\n\n\n# Rat Performance Prediction App")
 # Custom CSS for black background and blue-themed elements
 st.markdown(
     """
@@ -117,13 +115,10 @@ if uploaded_file:
                     input_data = row[features].values.reshape(1, -1)
 
                     # Load the model and scaler
-                    rf_model, scaler = load_model_and_scaler(target_variable)
-
-                    # Scale the input data
-                    input_scaled = scaler.transform(input_data)
+                    rf_model = load_model(target_variable)
 
                     # Make the prediction
-                    prediction = rf_model.predict(input_scaled)
+                    prediction = rf_model.predict(input_data)
 
                     # Assign performance category
                     performance = "proficient" if prediction[0] == 0 else "lower performance"
@@ -216,13 +211,11 @@ if st.button('Predict Individual Performance'):
         input_data_array = np.array(input_values).reshape(1, -1)
 
         # Load the model and scaler
-        rf_model, scaler = load_model_and_scaler(target_variable)
+        rf_model = load_model(target_variable)
 
-        # Scale the input data
-        input_scaled = scaler.transform(input_data_array)
 
         # Make the prediction
-        prediction = rf_model.predict(input_scaled)
+        prediction = rf_model.predict(input_data_array)
 
         # Assign performance category
         performance = "proficient" if prediction[0] == 0 else "lower performance"
