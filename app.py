@@ -24,8 +24,11 @@ target_metrics = [
 ]
 
 # Streamlit UI setup
-st.set_page_config(page_title="Rat Behavior Assessment App", page_icon="🐭", layout="centered",
-                   initial_sidebar_state="auto", menu_items=None)
+st.set_page_config(page_title="Rat Behavior Assessment App", 
+                   page_icon="🐭", 
+                   layout="centered", 
+                   initial_sidebar_state="auto", 
+                   menu_items=None)
 st.markdown("\n\n\n\n\n# Rat Performance Prediction App")
 # Custom CSS for black background and blue-themed elements
 st.markdown(
