@@ -15,19 +15,19 @@ features = [
 
 # List of target variables
 target_metrics = [
-    'Latency to corr sample', 'Latency to corr match',
-     'Time in corr sample', 
-    'Time in inc sample', 'False pos inc sample', 
-    'Time in corr match', 
-    'False pos inc match 1',  
+    'Latency to corr sample', 'Latency to corr match', 'Corr sample port num',
+    'Num pokes corr sample', 'Time in corr sample', 'Num pokes inc sample',
+    'Time in inc sample', 'False pos inc sample', 'Num pokes corr match',
+    'Time in corr match', 'Num pokes inc match 1', 'Time in inc match 1',
+    'False pos inc match 1', 'Num pokes inc match 2', 'Time in inc match 2',
     'False pos inc match 2',
 ]
 
 # Streamlit UI setup
-st.set_page_config(page_title="App", 
-                   page_icon="🐭", 
-                   layout="centered", 
-                   initial_sidebar_state="auto", 
+st.set_page_config(page_title="Rat Behavior Assessment App",
+                   page_icon="🐭",
+                   layout="centered",
+                   initial_sidebar_state="auto",
                    menu_items=None)
 st.markdown("\n\n\n\n\n# Rat Performance Prediction App")
 # Custom CSS for black background and blue-themed elements
@@ -173,8 +173,8 @@ st.components.v1.html(
         // Update the sum fields
         document.getElementById('port_pokes').value = portPokes.toFixed(2);
         document.getElementById('corner_pokes').value = cornerPokes.toFixed(2);
-        document.getElementById('poke_duration').value = pokeDuration.toFixed(2);
-        document.getElementById('corner_poke_duration').value = cornerPokeDuration.toFixed(2);
+        document.getElementById('port_duration').value = pokeDuration.toFixed(2);
+        document.getElementById('corner_duration').value = cornerPokeDuration.toFixed(2);
     }
 
     // Attach the calculateSums function to input events
@@ -189,44 +189,43 @@ st.components.v1.html(
 # Create input fields dynamically
 input_data = {}
 for feature in features:
-    input_data[feature] = st.number_input(f'{feature}', key=feature)
+    if feature not in ['port_pokes', 'corner_pokes', 'port_duration', 'corner_duration']:
+        input_data[feature] = st.number_input(f'{feature}', key=feature)
 
 # Compute sum fields
 port_pokes = sum([input_data.get(f'{prefix} poke event', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
 corner_pokes = sum([input_data.get(f'Sp{num} corner poke event', 0) for num in ['1', '2']])
-poke_duration = sum([input_data.get(f'{prefix} poke duration', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
-corner_poke_duration = sum([input_data.get(f'Sp{num} corner poke duration', 0) for num in ['1', '2']])
+port_duration = sum([input_data.get(f'{prefix} poke duration', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
+corner_duration = sum([input_data.get(f'Sp{num} corner poke duration', 0) for num in ['1', '2']])
 
 # Display sum fields
-input_data['port_pokes'] = st.number_input('port_pokes', value=port_pokes, format="%.2f", key='port pokes')
-input_data['corner_pokes'] = st.number_input('corner_pokes', value=corner_pokes, format="%.2f", key='corner pokes')
-input_data['port_duration'] = st.number_input('port_duration', value=poke_duration, format="%.2f", key='poke duration')
-input_data['corner_duration'] = st.number_input('corner_duration', value=corner_poke_duration, format="%.2f", key='corner poke duration')
+st.write(f'Port Pokes: {port_pokes}')
+st.write(f'Corner Pokes: {corner_pokes}')
+st.write(f'Port Duration: {port_duration}')
+st.write(f'Corner Duration: {corner_duration}')
 
-# Predict individual input data
-if st.button('Predict Individual Data'):
+if st.button('Predict Individual Performance'):
     st.header('Individual Prediction Results')
 
-    rat_results = {}
+    individual_results = {}
     for target_variable in target_metrics:
         # Prepare input data for prediction
-        input_values = np.array([input_data[feature] for feature in features]).reshape(1, -1)
+        input_values = [input_data[feature] for feature in features]
+        input_data_array = np.array(input_values).reshape(1, -1)
 
         # Load the model and scaler
         rf_model, scaler = load_model_and_scaler(target_variable)
 
         # Scale the input data
-        input_scaled = scaler.transform(input_values)
+        input_scaled = scaler.transform(input_data_array)
 
         # Make the prediction
         prediction = rf_model.predict(input_scaled)
 
         # Assign performance category
         performance = "proficient" if prediction[0] == 0 else "lower performance"
-        rat_results[target_variable] = performance
+        individual_results[target_variable] = performance
 
-    # Display results
-    for metric, performance in rat_results.items():
+    # Display results for the individual rat
+    for metric, performance in individual_results.items():
         st.write(f"{metric}: {performance}")
-
-# Note: Make sure to have the random forest models and scalers saved with the naming convention used in the code.
