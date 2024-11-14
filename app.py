@@ -141,7 +141,7 @@ if uploaded_file:
         st.error("Uploaded CSV file does not contain the required columns.")
 
 # Additional input fields for individual predictions
-st.header('Input Habituation Data')
+st.header('Input Day 1 Habituation Data')
 
 # JavaScript for auto-updating sum fields
 st.components.v1.html(
