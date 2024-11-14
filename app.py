@@ -207,7 +207,7 @@ if st.button('Predict Individual Performance'):
     individual_results = {}
     for target_variable in target_metrics:
         # Prepare input data for prediction
-        input_values = [input_data[feature] for feature in features]
+        input_values = [input_data.get(feature, 0) for feature in features]
         input_data_array = np.array(input_values).reshape(1, -1)
 
         # Load the model and scaler
