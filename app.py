@@ -26,7 +26,7 @@ st.set_page_config(page_title="Rat Behavior Assessment App",
                    layout="centered",
                    initial_sidebar_state="auto",
                    menu_items=None)
-st.markdown("\n\n\n\n\n# Rat Performance Prediction App")
+st.markdown("\n\n\n\n\n")
 
 # Custom CSS for black background and blue-themed elements
 st.markdown(
