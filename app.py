@@ -15,12 +15,9 @@ features = [
 
 # List of target variables
 target_metrics = [
-    'Latency to corr sample', 'Latency to corr match', 'Corr sample port num',
-    'Num pokes corr sample', 'Time in corr sample', 'Num pokes inc sample',
-    'Time in inc sample', 'False pos inc sample', 'Num pokes corr match',
-    'Time in corr match', 'Num pokes inc match 1', 'Time in inc match 1',
-    'False pos inc match 1', 'Num pokes inc match 2', 'Time in inc match 2',
-    'False pos inc match 2',
+    'Time in corr sample', 'Time in inc sample', 'False pos inc sample',
+    'Time in corr match', 'Time in inc match 1', 'False pos inc match 1',
+    'Time in inc match 2', 'False pos inc match 2',
 ]
 
 # Streamlit UI setup
