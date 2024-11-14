@@ -15,11 +15,11 @@ features = [
 
 # List of target variables
 target_metrics = [
-    'Latency to corr sample', 'Latency to corr match', 
-    'Time in corr sample', 
-    'Time in inc sample', 'False pos inc sample', 
-    'Time in corr match',  'Time in inc match 1',
-    'False pos inc match 1',  'Time in inc match 2',
+    'Latency to corr sample', 'Latency to corr match', 'Corr sample port num',
+    'Num pokes corr sample', 'Time in corr sample', 'Num pokes inc sample',
+    'Time in inc sample', 'False pos inc sample', 'Num pokes corr match',
+    'Time in corr match', 'Num pokes inc match 1', 'Time in inc match 1',
+    'False pos inc match 1', 'Num pokes inc match 2', 'Time in inc match 2',
     'False pos inc match 2',
 ]
 
@@ -89,10 +89,10 @@ st.title('Williams Lab. Habituation Behavior Assessment')
 uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
 
 # Function to load the correct Random Forest model and scaler
-def load_model_and_scaler(target_variable):
-    rf_model = joblib.load(f'rf_model_{target_variable}.pkl')
-    scaler = joblib.load(f'scaler_{target_variable}.pkl')
-    return rf_model, scaler
+def load_model(target_variable):
+    model_filename = f'{target_variable.replace(" ", "_")}_rf_ensemble_model.pkl'
+    rf_model = joblib.load(model_filename)
+    return rf_model
 
 # If a file is uploaded, process the data
 if uploaded_file:
@@ -141,7 +141,7 @@ if uploaded_file:
         st.error("Uploaded CSV file does not contain the required columns.")
 
 # Additional input fields for individual predictions
-st.header('Input Day One Habituation Data')
+st.header('Input Habituation Data')
 
 # JavaScript for auto-updating sum fields
 st.components.v1.html(
@@ -197,12 +197,6 @@ port_pokes = sum([input_data.get(f'{prefix} poke event', 0) for prefix in ['S1',
 corner_pokes = sum([input_data.get(f'Sp{num} corner poke event', 0) for num in ['1', '2']])
 port_duration = sum([input_data.get(f'{prefix} poke duration', 0) for prefix in ['S1', 'S2', 'M1', 'M2', 'M3']])
 corner_duration = sum([input_data.get(f'Sp{num} corner poke duration', 0) for num in ['1', '2']])
-
-# Add sum fields to input_data
-input_data['port_pokes'] = port_pokes
-input_data['corner_pokes'] = corner_pokes
-input_data['port_duration'] = port_duration
-input_data['corner_duration'] = corner_duration
 
 # Display sum fields
 st.write(f'Port Pokes: {port_pokes}')
